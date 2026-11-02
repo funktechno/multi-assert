@@ -20,23 +20,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  tests:
+  # One job, one install: every check runs in sequence on the same checkout.
+  ci:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: [22.x, 24.x]
     steps:
+      # fetch-depth: 0 -- the version step needs the full history and tags.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 22.x
           cache: npm
       - run: npm ci
+
       - run: npm run lint
       - run: npm run build
+
       # vitest.config.ts switches on the junit reporter when CI is set and writes ./junit.xml
-      - run: npm run test:coverage
+      - name: Unit tests (Node 22)
+        run: npm run test:coverage
         env:
           CI: "true"
 
@@ -45,56 +49,56 @@ jobs:
         if: success() || failure()
         with:
           files: junit.xml
-          check_name: unit test report (node ${{ matrix.node-version }})
+          check_name: unit test report
 
-      # continue-on-error so a quota failure on the upload can never fail a green run
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        continue-on-error: true
-        if: success() || failure()
+      # Packs the library and runs deliberately failing specs in Jest, Vitest, node:test,
+      # mocha + chai and Playwright, checking how the failures show up in the terminal output and
+      # the JUnit XML.
+      - name: Framework examples
+        run: npm run test:examples
+
+      # The published files must resolve correctly from CJS and ESM, with types.
+      - name: Package checks (publint, arethetypeswrong)
+        run: npm run check:package
+
+      # The same GitVersion + stamp steps the publish workflow runs, so a broken versioning setup
+      # shows up on a PR rather than on release day.
+      - uses: actions/setup-dotnet@v4
         with:
-          name: unit-test-results-node-${{ matrix.node-version }}
-          path: |
-            junit.xml
-            coverage
-          retention-days: 1
+          dotnet-version: 8.0.x
+      # GitVersion.yml is 6.x schema; v5 aborts on it.
+      - run: dotnet tool install --global GitVersion.Tool --version 6.8.2
+      - name: Generate and stamp the version
+        run: |
+          bash ./scripts/version/generateVersion.sh
+          bash ./scripts/version/updateVersion.sh
+      - name: Stamped version is valid semver
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          echo "version: $version"
+          echo "$version" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'
 
-  # Packs the library and runs deliberately failing specs in Jest, Vitest, node:test, mocha + chai
-  # and Playwright, checking how the failures show up in the terminal output and the JUnit XML.
-  examples:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+      # Same install and build, other Node versions: newest, then the oldest the package claims.
       - uses: actions/setup-node@v4
         with:
-          node-version: 22.x
-          cache: npm
-      - run: npm ci
-      - run: npm run test:examples
-      - name: Upload example reports
-        uses: actions/upload-artifact@v4
-        continue-on-error: true
-        if: success() || failure()
-        with:
-          name: example-reports
-          path: examples/_reports
-          retention-days: 1
-
-  # The published files must resolve correctly from CJS and ESM, with types, and must still load
-  # on the oldest Node the package claims to support.
-  package:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22.x
-          cache: npm
-      - run: npm ci
-      - run: npm run build
-      - run: npm run check:package
+          node-version: 24.x
+      - name: Unit tests (Node 24)
+        run: npm test
       - uses: actions/setup-node@v4
         with:
           node-version: 18.x
-      - name: Smoke test on Node 18
+      - name: Smoke test the built package (Node 18)
         run: npm run smoke
+
+      # continue-on-error so a quota failure on the upload can never fail a green run
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        if: success() || failure()
+        with:
+          name: test-reports
+          path: |
+            junit.xml
+            coverage
+            examples/_reports
+          retention-days: 1

@@ -2,7 +2,7 @@ import assert from "node:assert";
 import { describe, it } from "node:test";
 import { multiAssert, multiAssertAsync } from "@funktechno/multi-assert";
 
-// These tests fail on purpose: scripts/run-examples.mjs checks how the failures are reported.
+// These tests fail on purpose: scripts/examples/run-examples.mjs checks how the failures are reported.
 describe("api response (node:test)", () => {
   const res = { status: 404, headers: { "content-type": "text/html" }, body: { id: 7 } };
 

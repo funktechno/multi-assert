@@ -1,7 +1,7 @@
 // Loads the built ESM entry points with plain Node (run on the oldest supported Node).
 import assert from "node:assert";
-import { multiAssertAsync, MultiAssertError } from "../dist/index.mjs";
-import "../dist/jest.mjs";
+import { multiAssertAsync, MultiAssertError } from "../../dist/index.mjs";
+import "../../dist/jest.mjs";
 
 const error = await multiAssertAsync([
   ["a", () => assert.equal(1, 2)],

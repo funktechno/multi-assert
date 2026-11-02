@@ -1,0 +1,53 @@
+# REQUIRES GITVERSION 6.x (`workflow:`, `label:` and `prevent-increment:` are 6.x schema).
+#
+# Versioning policy, same shape as the doi / choredock repos:
+#   merge into main        ->  patch bumps          0.1.0 -> 0.1.1
+#   minor / major          ->  on the fly, two ways:
+#                                - tag it:            git tag v0.2.0 && git push --tags
+#                                - commit message:    "... +semver: minor"  (or  +semver: major)
+#                              (commit-message-incrementing is enabled)
+#   feature branch / PR    ->  <next version>-<label>.<n>   0.1.1-beta-my-thing.3, 0.1.1-pr7.2
+#
+# Tags are 3-part (0.1.0); a leading v (v0.1.0) is accepted too.
+# scripts/version/generateVersion.{sh,ps1} runs GitVersion and writes version-<semver>.txt;
+# scripts/version/updateVersion.{sh,ps1} stamps it into package.json.
+workflow: GitFlow/v1
+
+mode: ContinuousDelivery
+assembly-versioning-scheme: MajorMinorPatch
+assembly-file-versioning-scheme: MajorMinorPatch
+semantic-version-format: Strict
+commit-message-incrementing: Enabled
+
+branches:
+  main:
+    regex: ^main$|^master$
+    increment: Patch          # a merge to main bumps PATCH; MAJOR/MINOR are tag- or message-driven
+    is-main-branch: true
+    is-release-branch: true
+    prevent-increment:
+      of-merged-branch: true
+    track-merge-target: true
+    track-merge-message: true
+
+  # Working branches here are `<owner>/<name>` or `feat/<name>`, which the built-in `feature`
+  # regex does not match, so this covers them.
+  feature:
+    regex: ^(?:f|feat|fix|features?|[\w.-]+)[/-](?<BranchName>.+)$
+    increment: Inherit
+    label: "beta{BranchName}"
+    track-merge-message: true
+    source-branches:
+      - main
+
+  pull-request:
+    regex: ^(pull|pull-requests|pr)[/-](?<Number>\d+)
+    increment: Inherit
+    mode: ContinuousDelivery
+    label: pr{Number}
+    prevent-increment:
+      of-merged-branch: true
+    track-merge-message: true
+    source-branches:
+      - main
+      - feature

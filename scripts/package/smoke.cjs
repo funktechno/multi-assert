@@ -1,7 +1,7 @@
 // Loads the built CommonJS entry points with plain Node (run on the oldest supported Node).
 const assert = require("node:assert");
-const { multiAssert, MultiAssertError } = require("../dist/index.js");
-require("../dist/jest.js");
+const { multiAssert, MultiAssertError } = require("../../dist/index.js");
+require("../../dist/jest.js");
 
 try {
   multiAssert([["a", () => assert.equal(1, 2)], ["b", () => assert.equal(3, 4)]]);

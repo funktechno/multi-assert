@@ -1,36 +1,120 @@
 name: Publish Package to npmjs
 
+# Publishes when a GitHub release is published, or by hand: Actions > Publish Package to npmjs >
+# Run workflow. Setup notes: archive/publishing.md (maintainer copy).
+#
+# The version is never edited by hand. GitVersion works it out from git (GitVersion.yml) and
+# scripts/version/updateVersion.sh stamps it into package.json:
+#   release / tag 0.2.0   -> 0.2.0 (the tag wins)
+#   run from main         -> the next patch after the newest tag (0.1.1), or a minor/major when a
+#                            commit message says "+semver: minor" / "+semver: major"
+#   `version` input       -> exactly that
 on:
   release:
-    types: [created]
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run: do everything except publish (runs npm publish --dry-run)"
+        type: boolean
+        default: false
+      version:
+        description: "Publish exactly this version (e.g. 0.2.0) instead of the GitVersion one"
+        type: string
+        default: ""
+      npm_tag:
+        description: "npm dist-tag (default: latest; prereleases default to next)"
+        type: string
+        default: ""
 
 permissions:
   contents: read
   id-token: write # npm provenance
 
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      DRY_RUN: ${{ inputs.dry_run }}
+      NPM_TAG: ${{ inputs.npm_tag }}
     steps:
+      # fetch-depth: 0 -- GitVersion walks the whole history and tag graph.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22.x
           registry-url: https://registry.npmjs.org
           cache: npm
+
+      # Only here to host the GitVersion dotnet tool; nothing in this repo is built with .NET.
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      # GitVersion.yml is 6.x schema; v5 aborts on it.
+      - run: dotnet tool install --global GitVersion.Tool --version 6.8.2
+
       - run: npm ci
-      - name: Release tag must match package.json version
+
+      - name: Stamp version
+        env:
+          # A release publishes exactly its tag; a manual run may override the version.
+          VERSION_OVERRIDE: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.version }}
         run: |
-          tag="${GITHUB_REF_NAME#v}"
+          bash ./scripts/version/generateVersion.sh
+          bash ./scripts/version/updateVersion.sh
+
+      - name: Read version
+        id: version
+        run: |
           version="$(node -p "require('./package.json').version")"
-          if [ "$tag" != "$version" ]; then
-            echo "release tag $GITHUB_REF_NAME does not match package.json version $version"
-            exit 1
-          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Publishing version: $version"
+
+      - name: Real publishes only come from a release or main
+        if: env.DRY_RUN != 'true' && github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::Run this workflow from main (or tick dry_run). Got $GITHUB_REF."
+          exit 1
+
       - run: npm run lint
       - run: npm test
       - run: npm run build
       - run: npm run check:package
-      - run: npm publish --provenance --access public
+
+      - name: Publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+          REPO_PRIVATE: ${{ github.event.repository.private }}
+        run: |
+          args=(--access public)
+          tag="$NPM_TAG"
+          if [[ -z "$tag" && "$VERSION" == *-* ]]; then tag=next; fi
+          if [[ -n "$tag" ]]; then args+=(--tag "$tag"); fi
+
+          if [[ "$DRY_RUN" == "true" ]]; then
+            args+=(--dry-run)
+          else
+            if [[ -z "${NODE_AUTH_TOKEN:-}" ]]; then
+              echo "::error::NPM_TOKEN secret is not set (repo Settings > Secrets and variables > Actions)."
+              exit 1
+            fi
+            # npm provenance only works for public repositories.
+            if [[ "$REPO_PRIVATE" == "false" ]]; then args+=(--provenance); fi
+          fi
+
+          echo "npm publish ${args[*]}  (version $VERSION)"
+          npm publish "${args[@]}"
+
+          {
+            echo "### $([[ "$DRY_RUN" == "true" ]] && echo "Dry run" || echo "Published")"
+            echo "- package: \`$(node -p "require('./package.json').name")@$VERSION\`"
+            echo "- dist-tag: \`${tag:-latest}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
