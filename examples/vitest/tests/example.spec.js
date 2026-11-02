@@ -5,7 +5,7 @@ import { installMultiAssertMatchers } from "@funktechno/multi-assert/jest";
 
 installMultiAssertMatchers(expect);
 
-// These tests fail on purpose: scripts/run-examples.mjs checks how the failures are reported.
+// These tests fail on purpose: scripts/examples/run-examples.mjs checks how the failures are reported.
 describe("api response (vitest)", () => {
   const res = { status: 404, headers: { "content-type": "text/html" }, body: { id: 7 } };
 

@@ -47,9 +47,12 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "prepublishOnly": "npm run build",
-    "test:examples": "node scripts/run-examples.mjs",
+    "test:examples": "node scripts/examples/run-examples.mjs",
     "check:package": "publint && attw --pack . --profile node16",
-    "smoke": "node scripts/smoke.cjs && node scripts/smoke.mjs"
+    "smoke": "node scripts/package/smoke.cjs && node scripts/package/smoke.mjs",
+    "version:generate": "bash scripts/version/generateVersion.sh",
+    "version:update": "bash scripts/version/updateVersion.sh",
+    "version:reset": "bash scripts/version/resetVersion.sh"
   },
   "repository": {
     "type": "git",

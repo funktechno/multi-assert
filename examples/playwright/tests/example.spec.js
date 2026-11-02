@@ -1,7 +1,7 @@
 const { test, expect } = require("@playwright/test");
 const { multiAssert, multiAssertAsync } = require("@funktechno/multi-assert");
 
-// These tests fail on purpose: scripts/run-examples.mjs checks how the failures are reported.
+// These tests fail on purpose: scripts/examples/run-examples.mjs checks how the failures are reported.
 test.describe("api response (playwright)", () => {
   const res = { status: 404, headers: { "content-type": "text/html" }, body: { id: 7 } };
 

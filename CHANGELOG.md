@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0 (unreleased)
+## 0.1.0 (2026-11-02)
 
 - `multiAssert` / `multiAssertAsync` run every check and throw one `MultiAssertError`
   (an `AggregateError`) listing all failures, with labels (tuples or object), a short summary
@@ -11,3 +11,10 @@
 - `configure()` for defaults, `color`, `stackFrames`, `message` and `rethrowSingle` options.
 - `@funktechno/multi-assert/jest`: `expect(value).toPassAll([...])` matcher.
 - Dual ESM + CJS build with types; zero runtime dependencies; Node >= 18.
+
+## Unreleased
+
+- Versions come from git: GitVersion (`GitVersion.yml`) plus `scripts/version/*` stamp
+  `package.json` at release time. Patch bumps on merge to `main`; minor/major with
+  `+semver: minor|major` in a commit message or a tag.
+- Publish workflow: runs from a release or by manual dispatch, with an opt-in `dry_run`.

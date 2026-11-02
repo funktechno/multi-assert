@@ -9,3 +9,4 @@ examples/_reports/
 examples/*/node_modules/
 examples/*/report/
 examples/*/test-results/
+version-*.txt
