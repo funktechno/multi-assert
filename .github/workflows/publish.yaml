@@ -30,7 +30,10 @@ on:
 
 permissions:
   contents: read
-  id-token: write # npm provenance
+  # id-token: write is what lets npm trusted publishing (OIDC) authenticate this workflow, so there
+  # is no npm token or NPM_TOKEN secret. The trusted publisher is configured on npmjs.com for this
+  # repository and this workflow file name (publish.yaml).
+  id-token: write
 
 concurrency:
   group: publish
@@ -50,9 +53,15 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: 24.x
           registry-url: https://registry.npmjs.org
           cache: npm
+
+      # Trusted publishing needs npm 11.5.1 or newer.
+      - name: Use npm >= 11.5.1
+        run: |
+          npm install -g npm@^11.5.1
+          npm --version
 
       # Only here to host the GitVersion dotnet tool; nothing in this repo is built with .NET.
       - uses: actions/setup-dotnet@v4
@@ -91,7 +100,6 @@ jobs:
 
       - name: Publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           VERSION: ${{ steps.version.outputs.version }}
           REPO_PRIVATE: ${{ github.event.repository.private }}
         run: |
@@ -103,10 +111,6 @@ jobs:
           if [[ "$DRY_RUN" == "true" ]]; then
             args+=(--dry-run)
           else
-            if [[ -z "${NODE_AUTH_TOKEN:-}" ]]; then
-              echo "::error::NPM_TOKEN secret is not set (repo Settings > Secrets and variables > Actions)."
-              exit 1
-            fi
             # npm provenance only works for public repositories.
             if [[ "$REPO_PRIVATE" == "false" ]]; then args+=(--provenance); fi
           fi
