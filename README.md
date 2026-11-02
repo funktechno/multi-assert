@@ -89,6 +89,19 @@ multiAssert(checks, {
 });
 ```
 
+## Jest matcher
+
+`import "@funktechno/multi-assert/jest"` (or `installMultiAssertMatchers(expect)`) adds `expect(value).toPassAll([...])`, where each check receives `value`:
+
+```ts
+expect(res).toPassAll([
+  ["status", (r) => expect(r.status).toBe(200)],
+  ["id", (r) => expect(r.body.id).toBe(42)],
+]);
+```
+
+Types for the subpath need `moduleResolution` `node16`, `nodenext` or `bundler`.
+
 ## Development
 
 ```bash
