@@ -1,0 +1,8 @@
+{
+  "name": "example-node-test",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=report/junit.xml tests/example.spec.js"
+  }
+}

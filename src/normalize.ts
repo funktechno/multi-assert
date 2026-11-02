@@ -123,7 +123,8 @@ export function userFrames(stack: string | undefined): string[] {
 }
 
 function relativize(location: string): string {
-  const withoutScheme = location.replace(/^file:\/\/\/?/, "");
+  // file:///C:/x -> C:/x, but file:///home/x -> /home/x
+  const withoutScheme = location.replace(/^file:\/\//, "").replace(/^\/([A-Za-z]:)/, "$1");
   const cwd = typeof process !== "undefined" && process.cwd ? process.cwd() : undefined;
   if (!cwd) return withoutScheme;
   const norm = (p: string) => p.replace(/\\/g, "/");

@@ -32,7 +32,7 @@ export function formatFailures(failures: Failure[], total: number, options: Form
     const out = [`  ${paint(red, "✕")} ${failure.index}) ${title}`];
     for (const line of lines) out.push(line ? `${INDENT}${line}` : "");
     const frames = (options.frames.get(failure) ?? []).slice(0, options.stackFrames);
-    for (const frame of frames) out.push(paint(dim, `${INDENT}at ${frame}`));
+    for (const frame of frames) out.push(paint(dim, `${INDENT}→ ${frame}`));
     return out.join("\n");
   });
   return `${summaryLine(failures.length, total, options.heading)}\n\n${blocks.join("\n\n")}`;

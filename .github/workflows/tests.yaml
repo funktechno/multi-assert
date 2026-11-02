@@ -58,3 +58,24 @@ jobs:
             junit.xml
             coverage
           retention-days: 1
+
+  # Packs the library and runs deliberately failing specs in Jest, Vitest, node:test, mocha + chai
+  # and Playwright, checking how the failures show up in the terminal output and the JUnit XML.
+  examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+      - run: npm ci
+      - run: npm run test:examples
+      - name: Upload example reports
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        if: success() || failure()
+        with:
+          name: example-reports
+          path: examples/_reports
+          retention-days: 1

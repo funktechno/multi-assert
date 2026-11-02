@@ -22,13 +22,13 @@ multiAssert([
 2 of 3 assertions failed
 
   ✕ 1) expected 404 to be 200 // Object.is equality
-       at src/api/__tests__/http.spec.ts:38:24
+       → src/api/__tests__/http.spec.ts:38:24
 
   ✕ 3) Expected values to be strictly equal:
        + actual - expected
        + 'text/html'
        - 'application/json'
-       at src/api/__tests__/http.spec.ts:40:14
+       → src/api/__tests__/http.spec.ts:40:14
 ```
 
 ## Call forms
@@ -67,7 +67,7 @@ Two or more failures throw a `MultiAssertError` (an `AggregateError`):
 - `errors`: the original errors, untouched, so `instanceof`, `actual` and `expected` survive;
 - `failures`: `{ index, label?, message, actual?, expected?, operator?, location? }[]`;
 - `passed` and `total` counts;
-- `toJSON()` returns `failures`.
+- `toJSON()` returns `{ name, message, passed, total, failures }`. `failures`, `passed` and `total` are non-enumerable so reporters that dump an error's own properties (Vitest) do not print them twice.
 
 The first line of the message is a short summary because JUnit `message` attributes and CI
 annotation titles usually show only that. `error.stack` points at the call to `multiAssert`, so

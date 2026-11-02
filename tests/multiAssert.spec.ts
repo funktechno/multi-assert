@@ -103,7 +103,7 @@ describe("multiAssert", () => {
       multiAssert([() => assert.equal(1, 2), () => assert.equal(3, 4)]),
     );
     expect(err.failures[0].location).toMatch(/tests\/multiAssert\.spec\.ts:\d+:\d+$/);
-    expect(err.message).toMatch(/at tests\/multiAssert\.spec\.ts:\d+:\d+/);
+    expect(err.message).toMatch(/→ tests\/multiAssert\.spec\.ts:\d+:\d+/);
   });
 
   it("points the error stack at the caller, not the package", () => {
@@ -112,7 +112,8 @@ describe("multiAssert", () => {
     );
     const lines = err.stack.split("\n");
     expect(lines[0]).toBe("MultiAssertError: 2 of 2 assertions failed");
-    expect(lines[1]).toContain("multiAssert.spec.ts");
+    expect(err.stack).toContain(err.message);
+    expect(lines.find((l: string) => /^\s*at /.test(l))).toContain("multiAssert.spec.ts");
     expect(err.stack).not.toMatch(/src[\\/]multiAssert\.ts/);
   });
 
@@ -120,7 +121,7 @@ describe("multiAssert", () => {
     const err = catchIt(() =>
       multiAssert([() => assert.equal(1, 2), () => assert.equal(3, 4)], { stackFrames: 0 }),
     );
-    expect(err.message).not.toMatch(/\bat \S+:\d+:\d+/);
+    expect(err.message).not.toContain("→");
   });
 
   it("strips ANSI colors from messages unless color is on", () => {
@@ -169,8 +170,13 @@ describe("multiAssert", () => {
     const err = catchIt(() =>
       multiAssert([["a", () => assert.equal(1, 2)], ["b", () => assert.equal(3, 4)]]),
     );
-    expect(JSON.parse(JSON.stringify(err))).toHaveLength(2);
-    expect(JSON.parse(JSON.stringify(err))[0]).toMatchObject({ index: 1, label: "a" });
+    const json = JSON.parse(JSON.stringify(err));
+    expect(json).toMatchObject({ name: "MultiAssertError", passed: 0, total: 2 });
+    expect(json.message).toContain("2 of 2 assertions failed");
+    expect(json.failures).toHaveLength(2);
+    expect(json.failures[0]).toMatchObject({ index: 1, label: "a" });
+    // reporters that dump own properties must not see the failures twice
+    expect(Object.keys(err)).not.toContain("failures");
   });
 
   it("uses custom adapters before the built-in ones", () => {
@@ -227,7 +233,8 @@ describe("multiAssertAsync", () => {
       () => Promise.reject(new Error("a")),
       () => Promise.reject(new Error("b")),
     ]).catch((e) => e);
-    expect(err.stack.split("\n")[1]).toContain("multiAssert.spec.ts");
+    const frame = err.stack.split("\n").find((l: string) => /^\s*at /.test(l));
+    expect(frame).toContain("multiAssert.spec.ts");
   });
 
   it("resolves when everything passes", async () => {
