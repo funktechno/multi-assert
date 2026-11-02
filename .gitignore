@@ -1,1 +1,7 @@
 archive
+node_modules/
+dist/
+coverage/
+*.tgz
+.claude/
+junit.xml

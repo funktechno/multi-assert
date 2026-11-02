@@ -1,0 +1,69 @@
+{
+  "name": "@funktechno/multi-assert",
+  "version": "0.1.0",
+  "description": "Run a group of assertions in any Node test framework and report every failure in one readable error.",
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup",
+    "lint": "tsc --noEmit && eslint \"{src,tests}/**/*.ts\"",
+    "lint:fix": "tsc --noEmit && eslint \"{src,tests}/**/*.ts\" --fix",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lastlink/multi-assert.git"
+  },
+  "keywords": [
+    "assert",
+    "soft-assert",
+    "multiple",
+    "aggregate",
+    "jest",
+    "vitest",
+    "mocha",
+    "node-test",
+    "testing"
+  ],
+  "author": "lastlink",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lastlink/multi-assert/issues"
+  },
+  "homepage": "https://github.com/lastlink/multi-assert#readme",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.6",
+    "@vitest/coverage-v8": "^5.1.0",
+    "eslint": "^10.14.0",
+    "tsup": "^9.0.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.1",
+    "vitest": "^5.1.0"
+  }
+}
