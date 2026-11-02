@@ -31,7 +31,7 @@ permissions:
   contents: read
   # id-token: write is what lets npm trusted publishing (OIDC) authenticate this workflow, so there
   # is no npm token or NPM_TOKEN secret. The trusted publisher is configured on npmjs.com for this
-  # repository and this workflow file name (publish.yaml).
+  # repository and this workflow file name (publish.yml).
   id-token: write
 
 concurrency:
