@@ -1,5 +1,5 @@
-# generateVersion.ps1 - Generate version metadata using GitVersion.
-# Writes version-<SEMVER>.txt in the repo root for updateVersion.ps1 to consume.
+# generateVersion.ps1 - Generate version metadata using GitVersion, then the merge-count rules of versionRules.ps1.
+# Writes version-<VERSION>.txt in the repo root for updateVersion.ps1 to consume.
 #
 # Windows twin of generateVersion.sh - same output file, same keys, so either script can feed
 # either updateVersion. The .sh runs on the Linux CI runner (it needs jq to parse GitVersion's
@@ -55,6 +55,17 @@ try {
     $GIT_TAG = $versionData.PreReleaseTag
     $GIT_BRANCH = $versionData.BranchName
     $COMMIT_COUNT = $versionData.CommitsSinceVersionSource
+
+    # The version string rules (versionRules.ps1, the twin of versionRules.sh): main 0.6.56, a branch 0.6.56-3. The branch is the pipeline's
+    # when there is one; $env:VERSION_BRANCH previews another.
+    . (Join-Path $PSScriptRoot 'versionRules.ps1')
+    $rulesBranch = @($env:VERSION_BRANCH, $env:CI_MERGE_REQUEST_SOURCE_BRANCH_NAME, $env:CI_COMMIT_BRANCH, $env:GITHUB_HEAD_REF, $env:GITHUB_REF_NAME, $GIT_BRANCH) |
+        Where-Object { $_ } | Select-Object -First 1
+    $rules = Get-VersionRules -Branch $rulesBranch -MajorMinorPatch $MAJOR_MINOR_PATCH -Version $VERSION -FullSemVer $FULL_SEMVER -CommitCount $COMMIT_COUNT
+    $MAJOR_MINOR_PATCH = $rules.MajorMinorPatch
+    $VERSION = $rules.Version
+    $FULL_SEMVER = $rules.FullSemVer
+    $COMMIT_COUNT = $rules.CommitCount
     $BUILD_DATE = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
 
     $versionFile = Join-Path $repo "version-$VERSION.txt"
