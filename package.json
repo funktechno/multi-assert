@@ -1,6 +1,6 @@
 {
   "name": "@funktechno/multi-assert",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Run a group of assertions in any Node test framework and report every failure in one readable error.",
   "type": "commonjs",
   "main": "./dist/index.js",

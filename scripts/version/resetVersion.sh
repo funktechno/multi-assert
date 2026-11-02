@@ -2,13 +2,13 @@
 set -euo pipefail
 
 # resetVersion.sh
-# Puts package.json "version" back to the 1.0.0 baseline it is committed with. version-*.txt is
+# Puts package.json "version" back to the 0.1.0 baseline it is committed with. version-*.txt is
 # left alone. Use it after testing updateVersion.sh locally so a GitVersion-derived number is not
 # committed by accident.
 #
 # Usage: ./scripts/version/resetVersion.sh (from anywhere; cd's to repo root)
 
-BASELINE="1.0.0"
+BASELINE="0.1.0"
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$REPO"
 
