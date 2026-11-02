@@ -47,7 +47,9 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "prepublishOnly": "npm run build",
-    "test:examples": "node scripts/run-examples.mjs"
+    "test:examples": "node scripts/run-examples.mjs",
+    "check:package": "publint && attw --pack . --profile node16",
+    "smoke": "node scripts/smoke.cjs && node scripts/smoke.mjs"
   },
   "repository": {
     "type": "git",
@@ -71,10 +73,12 @@
   },
   "homepage": "https://github.com/lastlink/multi-assert#readme",
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.6.6",
     "@vitest/coverage-v8": "^5.1.0",
     "eslint": "^10.14.0",
+    "publint": "^0.3.25",
     "tsup": "^9.0.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.1",

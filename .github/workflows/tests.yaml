@@ -79,3 +79,22 @@ jobs:
           name: example-reports
           path: examples/_reports
           retention-days: 1
+
+  # The published files must resolve correctly from CJS and ESM, with types, and must still load
+  # on the oldest Node the package claims to support.
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run check:package
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+      - name: Smoke test on Node 18
+        run: npm run smoke
