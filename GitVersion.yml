@@ -6,7 +6,7 @@
 #                                - tag it:            git tag v0.2.0 && git push --tags
 #                                - commit message:    "... +semver: minor"  (or  +semver: major)
 #                              (commit-message-incrementing is enabled)
-#   feature branch / PR    ->  <next version>-<label>.<n>   0.1.1-beta-my-thing.3, 0.1.1-pr7.2
+#   any other branch / PR  ->  that number, -<commits on the branch>   0.1.4-3
 #
 # Tags are 3-part (0.1.0); a leading v (v0.1.0) is accepted too.
 # scripts/version/generateVersion.{sh,ps1} runs GitVersion and writes version-<semver>.txt;

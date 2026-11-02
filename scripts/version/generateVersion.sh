@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# generateVersion.sh - Generate version metadata using GitVersion.
-# Writes version-<SEMVER>.txt in the repo root for updateVersion.sh to consume.
+# generateVersion.sh - Generate version metadata using GitVersion, then the merge-count rules of versionRules.sh.
+# Writes version-<VERSION>.txt in the repo root for updateVersion.sh to consume.
 #
 # Resolution order for the GitVersion binary:
 #   1. $GITVERSION_BIN (set by CI after `dotnet tool install GitVersion.Tool`)
@@ -88,6 +88,14 @@ MAJOR_MINOR_PATCH=${MAJOR_MINOR_PATCH:-"0.0.0"}
 
 # Replace 'PullRequest'/'pr' labels with 'Patch' in SemVer so PR builds still produce a usable version.
 VERSION=${SEMVER//PullRequest/Patch}
+
+# The version string rules (scripts/version/versionRules.sh): main is MAJOR.MINOR.(tag patch + merge requests since the tag), 0.6.56; any other
+# branch is that number where it left main, -<its commits>, 0.6.56-3. The branch is the pipeline's (a merge request pipeline and a GitHub run
+# check out a detached commit, which GitVersion may not name); to preview another branch's string:
+#   VERSION_BRANCH=main ./scripts/version/generateVersion.sh
+RULES_BRANCH="${VERSION_BRANCH:-${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:-${CI_COMMIT_BRANCH:-${GITHUB_HEAD_REF:-${GITHUB_REF_NAME:-$GIT_BRANCH}}}}}"
+source "$REPO/scripts/version/versionRules.sh"
+apply_version_rules "$RULES_BRANCH"
 
 BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
