@@ -1,4 +1,4 @@
-import { formatFailures, shouldUseColor, summaryLine } from "./format";
+import { formatFailures, shouldUseColor } from "./format";
 import { MultiAssertError } from "./MultiAssertError";
 import { normalizeError, userFrames } from "./normalize";
 import type {
@@ -114,8 +114,8 @@ function finish(
   );
   // Point reporters at the test that called multiAssert, not at this package.
   const callSite = (site ?? "").split("\n").filter((l) => /^\s*at /.test(l));
-  const heading = `${error.name}: ${summaryLine(failures.length, total, settings.message)}`;
-  error.stack = [heading, ...callSite].join("\n");
+  // Standard `Name: message` header, so reporters that print the stack (Jest) show every failure.
+  error.stack = [`${error.name}: ${message}`, ...callSite].join("\n");
   throw error;
 }
 

@@ -1,0 +1,14 @@
+{
+  "name": "example-mocha",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "mocha"
+  },
+  "devDependencies": {
+    "chai": "^5.0.0",
+    "mocha": "^11.0.0",
+    "mocha-junit-reporter": "^2.2.1",
+    "mocha-multi-reporters": "^1.5.1"
+  }
+}

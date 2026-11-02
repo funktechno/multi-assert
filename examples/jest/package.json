@@ -1,0 +1,18 @@
+{
+  "name": "example-jest",
+  "private": true,
+  "scripts": {
+    "test": "jest"
+  },
+  "jest": {
+    "testMatch": ["**/tests/**/*.spec.js"],
+    "reporters": [
+      "default",
+      ["jest-junit", { "outputDirectory": "report", "outputName": "junit.xml" }]
+    ]
+  },
+  "devDependencies": {
+    "jest": "^30.0.0",
+    "jest-junit": "^16.0.0"
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "spec": "tests/**/*.spec.js",
+  "reporter": "mocha-multi-reporters",
+  "reporter-option": ["configFile=reporter-config.json"]
+}
