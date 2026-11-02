@@ -56,7 +56,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lastlink/multi-assert.git"
+    "url": "git+https://github.com/funktechno/multi-assert.git"
   },
   "keywords": [
     "assert",
@@ -72,9 +72,9 @@
   "author": "lastlink",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/lastlink/multi-assert/issues"
+    "url": "https://github.com/funktechno/multi-assert/issues"
   },
-  "homepage": "https://github.com/lastlink/multi-assert#readme",
+  "homepage": "https://github.com/funktechno/multi-assert#readme",
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
     "@eslint/js": "^10.0.1",
