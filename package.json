@@ -17,12 +17,25 @@
         "default": "./dist/index.js"
       }
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./jest": {
+      "import": {
+        "types": "./dist/jest.d.mts",
+        "default": "./dist/jest.mjs"
+      },
+      "require": {
+        "types": "./dist/jest.d.ts",
+        "default": "./dist/jest.js"
+      }
+    }
   },
   "files": [
     "dist"
   ],
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/jest.js",
+    "./dist/jest.mjs"
+  ],
   "engines": {
     "node": ">=18"
   },

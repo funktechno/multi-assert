@@ -7,6 +7,18 @@ on:
       - main
   pull_request:
 
+# `pull-requests: write` is needed in addition to `checks: write`: the test reporter creates the
+# check run with the latter and then looks up the PR with the former. Do not add a job-level
+# `permissions:` block; it REPLACES this one and every scope it omits becomes `none`.
+permissions:
+  checks: write
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -23,11 +35,26 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run build
-      - run: npm test
+      # vitest.config.ts switches on the junit reporter when CI is set and writes ./junit.xml
+      - run: npm run test:coverage
         env:
           CI: "true"
-      - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v4
-        if: always() && matrix.node-version == '22.x'
+
+      - name: Publish test report
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: success() || failure()
         with:
-          report_paths: junit.xml
+          files: junit.xml
+          check_name: unit test report (node ${{ matrix.node-version }})
+
+      # continue-on-error so a quota failure on the upload can never fail a green run
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        if: success() || failure()
+        with:
+          name: unit-test-results-node-${{ matrix.node-version }}
+          path: |
+            junit.xml
+            coverage
+          retention-days: 1
