@@ -1,0 +1,29 @@
+version: 2
+# Twice a month (the 1st and the 18th at 23:00), the same cron schedule as the bookkeeper-ui, doi and
+# nazarick repos. Functional/security updates only: major versions are ignored and adopted
+# deliberately. Each update is a pull request that runs .github/workflows/tests.yaml and merges once
+# it passes.
+updates:
+  # The package itself (dev dependencies: TypeScript, tsup, Vitest, ESLint, publint, ...).
+  # The projects under examples/ pin the framework versions they demonstrate, so they are left alone.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "cron"
+      cronjob: "0 23 1,18 * *"
+    open-pull-requests-limit: 5
+    ignore:
+      # Majors (a new Node floor, a new ESLint or TypeScript line) need a human.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  # Actions used in .github/workflows.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "cron"
+      cronjob: "0 23 1,18 * *"
+    open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
